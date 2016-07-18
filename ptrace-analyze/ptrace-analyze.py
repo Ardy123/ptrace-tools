@@ -1,7 +1,9 @@
 #!/usr/bin/python
 
 import sys
+from threadsource import *
 from eventfilter import *
+from threadstatssink import *
 
 def reportProcInfo(threads_list):
     totalns = max([thr.lastTime() for thr in threads_list]) - min([thr.startTime() for thr in threads_list])
@@ -27,11 +29,10 @@ def reportThreadInfo(threads_list):
         print ''
 
 def streamFile(strm):
-    evt_fltr = EventFilter()
-    for line in strm:
-        record = line.strip("\n").split(" ")
-        evt_fltr.addEvent(record[1], record[0], record[2])
-    return evt_fltr.threadList()
+    evt_sink = ThreadStatsSink(EventFilter(ThreadSource(strm)))
+    thread_stats_list = evt_sink.next()
+    evt_sink.close()
+    return thread_stats_list
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
@@ -44,7 +45,7 @@ if __name__ == '__main__':
         reportThreadInfo(threads_list)
         print ''
     else:
-        print 'ptrace-analyze (c)2012 Ardavon Falls'
+        print 'ptrace-analyze (c)2016 Ardavon Falls'
         print 'usage...'
         print 'ptrace-analyze <log file>'
 

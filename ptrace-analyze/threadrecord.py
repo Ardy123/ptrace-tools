@@ -54,5 +54,4 @@ class ThreadRecord:
     def totalWaitTime(self):
         return self._totalWaitTime
 
-    
-                
+

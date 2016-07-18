@@ -1,5 +1,3 @@
-from threadrecord import *
-
 class EventFilter:
 
     _startEventTbl = [
@@ -13,26 +11,34 @@ class EventFilter:
         'PTHREAD_END',
         'PTHREAD_MUTEX_LOCK_ENTER',
         'PTHREAD_COND_WAIT_ENTER']
-
     
-    def __init__(self):
-        self._threadTbl = {}
+    def __init__(self, source):
+        self._source = source
 
-    def addEvent(self, tid, event, time):
-        # add tid if it does not exist
-        if tid not in self._threadTbl:
-            self._threadTbl[tid] = ThreadRecord(tid, str(tid))
+    def __iter__(self):
+        return self
+    
+    def next(self):
+        line = self._source.iter().next()
+        # print "eventfilter:" + line[:-1]
+        record = line.strip("\n").split(" ")
+        event = self._filterEvent(record[1], record[2], record[0])
+        if not event:
+            return self.next()
+        return event
+
+    def close(self):
+        self._source.close()
+        
+    def _filterEvent(self, tid, time, event):
         # convert time string to a usec value
         uSec = self._calcUSec(time)
         # update thread with record
         if event in EventFilter._startEventTbl:   
-            self._threadTbl[tid].addEvent("START", uSec, event)
+            return ("START", tid, uSec, event)
         if event in EventFilter._endEventTbl:
-            self._threadTbl[tid].addEvent("END", uSec, event)
+            return ("END", tid, uSec, event)
 
-    def threadList(self):
-        return [thr[1] for thr in self._threadTbl.iteritems()]
-        
     def _calcUSec(self, time):
         sec_usec = time.split(':')
         return (long(sec_usec[0]) * 1000000000L) + long(sec_usec[1])
