@@ -20,8 +20,7 @@ class EventFilter:
         return self
     
     def next(self):
-        event = self._filterEvent(*self._iter.next().split())
-        return event
+        return self._filterEvent(*self._iter.next().split())
 
     def close(self):
         self._source.close()
