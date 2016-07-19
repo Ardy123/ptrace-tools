@@ -16,17 +16,15 @@ class EventFilter:
     
     def __init__(self, source):
         self._source = source
-        self._iter = source.iter()
+        self._iter = source.iter(EventFilter._startEventTbl + EventFilter._endEventTbl)
 
     def __iter__(self):
         return self
     
     def next(self):
-        while True:
-            line = self._iter.next()
-            event = self._filterEvent(*line.split())
-            if event:
-                return event
+        line = self._iter.next()
+        event = self._filterEvent(*line.split())
+        return event
 
     def close(self):
         self._source.close()
@@ -36,6 +34,7 @@ class EventFilter:
             return (EventFilter.START_TAG, tid, EventFilter._calcUSec(time), event)
         if event in EventFilter._endEventTbl:
             return (EventFilter.END_TAG, tid, EventFilter._calcUSec(time), event)
+
     @staticmethod
     def _calcUSec(time):
         sec_usec = map(long, time.split(':'))
