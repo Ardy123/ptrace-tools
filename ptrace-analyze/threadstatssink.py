@@ -11,9 +11,8 @@ class ThreadStatsSink:
         
     def next(self):
         for evt in self._source:
-            # print "threadrecord:" + str(evt) + "\n"
             evt_type = evt[0]
-            evt_thid = long(evt[1])
+            evt_thid = int(evt[1])
             evt_name = evt[1]
             evt_time = evt[2]
             evt_event= evt[3]

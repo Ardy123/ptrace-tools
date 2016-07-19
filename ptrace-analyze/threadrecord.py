@@ -1,3 +1,5 @@
+from eventfilter import *
+
 class ThreadRecord:
 
     def __init__(self, thread_id, thread_name):
@@ -9,23 +11,19 @@ class ThreadRecord:
         self._maxWaitTime = 0
         self._numberOfWaits = 0
         self._lastEndEvent = None
-        self._lastStartEvent = None
         
     def addEvent(self, evt_type, evt_time, event):
         self._startEventTime = evt_time if not self._startEventTime else self._startEventTime
         self._lastEventTime = evt_time
-        if not self._lastEndEvent:
-            if "END" == evt_type:
-                self._lastEndEvent = (evt_type, evt_time, event)
-        else:
-            if "START" == evt_type:
-                self._lastStartEvent = (evt_type, evt_time, event)
-                wait_time = (self._lastStartEvent[1] - self._lastEndEvent[1])
-                self._totalWaitTime += wait_time
-                self._numberOfWaits += 1
-                self._maxWaitTime = wait_time if wait_time > self._maxWaitTime else self._maxWaitTime
-                self._lastEndEvent = None
-                self._lastStartEvent = None        
+        if EventFilter.END_TAG == evt_type and not self._lastEndEvent:
+            self._lastEndEvent = (evt_type, evt_time, event)
+        elif EventFilter.START_TAG == evt_type and self._lastEndEvent:
+            wait_time = (evt_time - self._lastEndEvent[1])
+            self._totalWaitTime += wait_time
+            self._numberOfWaits += 1
+            self._maxWaitTime = wait_time if wait_time > self._maxWaitTime else self._maxWaitTime
+            self._lastEndEvent = None
+          
 
     def name(self):
         return self._name

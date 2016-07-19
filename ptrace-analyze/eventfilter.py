@@ -1,5 +1,7 @@
 class EventFilter:
-
+    START_TAG = 0
+    END_TAG = 1
+    
     _startEventTbl = [
         'PROCESS_START', 
         'PTHREAD_START', 
@@ -14,33 +16,32 @@ class EventFilter:
     
     def __init__(self, source):
         self._source = source
+        self._iter = source.iter()
 
     def __iter__(self):
         return self
     
     def next(self):
-        line = self._source.iter().next()
-        # print "eventfilter:" + line[:-1]
-        record = line.strip("\n").split(" ")
-        event = self._filterEvent(record[1], record[2], record[0])
-        if not event:
-            return self.next()
-        return event
+        while True:
+            line = self._iter.next()
+            event = self._filterEvent(*line.split())
+            if event:
+                return event
 
     def close(self):
         self._source.close()
         
-    def _filterEvent(self, tid, time, event):
+    def _filterEvent(self, event, tid, time):
         # convert time string to a usec value
         uSec = self._calcUSec(time)
         # update thread with record
         if event in EventFilter._startEventTbl:   
-            return ("START", tid, uSec, event)
+            return (EventFilter.START_TAG, tid, uSec, event)
         if event in EventFilter._endEventTbl:
-            return ("END", tid, uSec, event)
+            return (EventFilter.END_TAG, tid, uSec, event)
 
     def _calcUSec(self, time):
-        sec_usec = time.split(':')
-        return (long(sec_usec[0]) * 1000000000L) + long(sec_usec[1])
+        sec_usec = map(long, time.split(':'))
+        return (sec_usec[0] * 1000000000L) + sec_usec[1]
             
     
