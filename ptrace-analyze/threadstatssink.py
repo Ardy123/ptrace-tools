@@ -19,7 +19,7 @@ class ThreadStatsSink:
             if evt_thid not in self._threaddb:
                 self._threaddb[evt_thid] = ThreadRecord(evt_thid, evt_name, evt_time)
             self._threaddb[evt_thid].addEvent(evt_type, evt_time, evt_event)    
-        return [i[1] for i in self._threaddb.iteritems()]
+        return self._threaddb.values()
 
     def close(self):
         self._source.close()
