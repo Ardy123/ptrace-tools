@@ -32,15 +32,12 @@ class EventFilter:
         self._source.close()
         
     def _filterEvent(self, event, tid, time):
-        # convert time string to a usec value
-        uSec = self._calcUSec(time)
-        # update thread with record
         if event in EventFilter._startEventTbl:   
-            return (EventFilter.START_TAG, tid, uSec, event)
+            return (EventFilter.START_TAG, tid, EventFilter._calcUSec(time), event)
         if event in EventFilter._endEventTbl:
-            return (EventFilter.END_TAG, tid, uSec, event)
-
-    def _calcUSec(self, time):
+            return (EventFilter.END_TAG, tid, EventFilter._calcUSec(time), event)
+    @staticmethod
+    def _calcUSec(time):
         sec_usec = map(long, time.split(':'))
         return (sec_usec[0] * 1000000000L) + sec_usec[1]
             

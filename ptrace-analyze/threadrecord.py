@@ -2,10 +2,10 @@ from eventfilter import *
 
 class ThreadRecord:
 
-    def __init__(self, thread_id, thread_name):
+    def __init__(self, thread_id, thread_name, thread_time):
         self._id = thread_id
         self._name = thread_name
-        self._startEventTime = None
+        self._startEventTime = thread_time
         self._lastEventTime = None
         self._totalWaitTime = 0
         self._maxWaitTime = 0
@@ -13,7 +13,6 @@ class ThreadRecord:
         self._lastEndEvent = None
         
     def addEvent(self, evt_type, evt_time, event):
-        self._startEventTime = evt_time if not self._startEventTime else self._startEventTime
         self._lastEventTime = evt_time
         if EventFilter.END_TAG == evt_type and not self._lastEndEvent:
             self._lastEndEvent = (evt_type, evt_time, event)
@@ -21,7 +20,7 @@ class ThreadRecord:
             wait_time = (evt_time - self._lastEndEvent[1])
             self._totalWaitTime += wait_time
             self._numberOfWaits += 1
-            self._maxWaitTime = wait_time if wait_time > self._maxWaitTime else self._maxWaitTime
+            self._maxWaitTime = max(wait_time, self._maxWaitTime)
             self._lastEndEvent = None
           
 
