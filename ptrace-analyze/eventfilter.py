@@ -17,7 +17,10 @@ class EventFilter:
     def __init__(self, source):
         self._source = source
         self._iter = source.iter(EventFilter._startEventTbl + EventFilter._endEventTbl)
-
+        self._eventTbl = dict(
+            [(i, EventFilter.START_TAG) for i in EventFilter._startEventTbl] +
+            [(j, EventFilter.END_TAG) for j in EventFilter._endEventTbl])
+        
     def __iter__(self):
         return self
     
@@ -30,10 +33,7 @@ class EventFilter:
         self._source.close()
         
     def _filterEvent(self, event, tid, time):
-        if event in EventFilter._startEventTbl:   
-            return (EventFilter.START_TAG, tid, EventFilter._calcUSec(time), event)
-        if event in EventFilter._endEventTbl:
-            return (EventFilter.END_TAG, tid, EventFilter._calcUSec(time), event)
+        return (self._eventTbl[event], tid, EventFilter._calcUSec(time), event)
 
     @staticmethod
     def _calcUSec(time):
