@@ -30,7 +30,7 @@ class EventFilter:
 
     @staticmethod
     def _calcUSec(time):
-        sec_usec = map(long, time.split(':'))
-        return (sec_usec[0] * 1000000000L) + sec_usec[1]
+        sec_usec = time.split(':')
+        return (long(sec_usec[0]) * 1000000000L) + long(sec_usec[1])
             
     
