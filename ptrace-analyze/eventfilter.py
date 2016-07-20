@@ -20,17 +20,10 @@ class EventFilter:
         return self
     
     def next(self):
-        return self._filterEvent(*self._iter.next().split())
+        evt = self._iter.next().split()
+        sec_usec = evt[2].split(':')
+        sec_usec = (long(sec_usec[0]) * 1000000000L) + long(sec_usec[1])        
+        return (EventFilter._eventTbl[evt[0]], evt[1], sec_usec)
 
     def close(self):
         self._source.close()
-        
-    def _filterEvent(self, event, tid, time):
-        return (EventFilter._eventTbl[event], tid, EventFilter._calcUSec(time), event)
-
-    @staticmethod
-    def _calcUSec(time):
-        sec_usec = time.split(':')
-        return (long(sec_usec[0]) * 1000000000L) + long(sec_usec[1])
-            
-    

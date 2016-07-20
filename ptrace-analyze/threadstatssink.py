@@ -4,22 +4,18 @@ class ThreadStatsSink:
 
     def __init__(self, source):
         self._source = source
-        self._threaddb = {}
 
     def __iter__(self):
         return self
         
     def next(self):
+        threadTbl = {}
         for evt in self._source:
-            evt_type = evt[0]
             evt_thid = int(evt[1])
-            evt_name = evt[1]
-            evt_time = evt[2]
-            evt_event= evt[3]
-            if evt_thid not in self._threaddb:
-                self._threaddb[evt_thid] = ThreadRecord(evt_thid, evt_name, evt_time)
-            self._threaddb[evt_thid].addEvent(evt_type, evt_time, evt_event)    
-        return self._threaddb.values()
+            if evt_thid not in threadTbl:
+                threadTbl[evt_thid] = ThreadRecord(evt_thid, evt[1], evt[2])
+            threadTbl[evt_thid].addEvent(evt[0], evt[2])    
+        return threadTbl.values()
 
     def close(self):
         self._source.close()
