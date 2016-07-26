@@ -1,34 +1,32 @@
-from eventfilter import *
-
 class ThreadRecord:
 
-    def __init__(self, thread_id, thread_name, thread_time):
-        self._id = thread_id
-        self._name = thread_name
-        self._startEventTime = thread_time
-        self._lastEventTime = None
-        self._totalWaitTime = 0
-        self._maxWaitTime = 0
-        self._numberOfWaits = 0
-        self._lastEndEvent = None
-        
-    def addEvent(self, evt_type, evt_time):
-        self._lastEventTime = evt_time
-        if EventFilter.END_TAG == evt_type and not self._lastEndEvent:
-            self._lastEndEvent = evt_time
-        elif EventFilter.START_TAG == evt_type and self._lastEndEvent:
-            wait_time = (evt_time - self._lastEndEvent)
+    def __init__(self, evt_time):
+        self._startEventTime = self._lastEventTime = evt_time   
+        self._totalWaitTime = 0L
+        self._maxWaitTime = 0L
+        self._numberOfWaits = 0L
+        self._lastEndEventTime = 0L
+
+    def addStartEvent(self, evt_time):
+        self._lastEventTime  = evt_time
+        if self._lastEndEventTime:
+            wait_time = (evt_time - self._lastEndEventTime)
             self._totalWaitTime += wait_time
             self._numberOfWaits += 1
             self._maxWaitTime = max(wait_time, self._maxWaitTime)
-            self._lastEndEvent = None
-          
+            self._lastEndEventTime ^= self._lastEndEventTime
+        return self
 
-    def name(self):
-        return self._name
+    def addEndEvent(self, evt_time):        
+        self._lastEventTime  = evt_time
+        if not self._lastEndEventTime:
+            self._lastEndEventTime = evt_time
+        return self
+                
 
-    def id(self):
-        return self._id
+    @staticmethod
+    def construct(_, evt_time):
+        return ThreadRecord(evt_time)
 
     def startTime(self):
         return long(self._startEventTime)

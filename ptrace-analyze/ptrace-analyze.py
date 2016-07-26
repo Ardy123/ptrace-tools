@@ -2,19 +2,19 @@
 
 import sys
 from threadsource import *
-from eventfilter import *
 from threadstatssink import *
 
 def reportProcInfo(threads_list):
-    totalns = max([thr.lastTime() for thr in threads_list]) - min([thr.startTime() for thr in threads_list])
+    totalns = max([thr[1].lastTime()for thr in threads_list]) - min([thr[1].startTime() for rec in threads_list])    
     totalSec = float(totalns) / float(1000000000)
     print 'Process execution time: %.04f seconds' % (totalSec)
     print 'Number of threads: %d' % (len(threads_list))
 
 
 def reportThreadInfo(threads_list):
-    for thr in threads_list:
-        tid = thr.id()
+    for rec in threads_list:
+        tid = rec[0]        
+        thr = rec[1]
         total_uSec = thr.runTime()
         avg_wait_time = thr.averageWaitTime()
         max_wait_time = thr.maxWaitTime()
@@ -29,16 +29,14 @@ def reportThreadInfo(threads_list):
         print ''
 
 def streamFile(strm):
-    evt_sink = ThreadStatsSink(EventFilter(ThreadSource(strm)))
+    evt_sink = ThreadStatsSink(ThreadSource(strm))
     thread_stats_list = evt_sink.next()
     evt_sink.close()
     return thread_stats_list
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        threads_file = open(sys.argv[1], mode="r")
-        threads_list = streamFile(threads_file)
-        threads_file.close()
+        threads_list = streamFile(open(sys.argv[1], mode="r"))
         print '--- process information ---'
         reportProcInfo(threads_list)
         print ''

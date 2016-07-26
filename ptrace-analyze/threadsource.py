@@ -3,71 +3,39 @@ import os
 import re
 
 class ThreadSource:
-    class _ForwardIterator:
-        def __init__(self, src):
-            self._src = src
-        
-        def __iter__(self):
-            return self;
-        
-        def next(self):
-            line = self._src.readNextLine()
-            if line:
-                return line
-            else:
-                raise StopIteration()
-
-    class _ForwardPatternIterator:
-        def __init__(self, src, event_list):
-            self._src = src
-            self._iter = re.finditer('.*|'.join(event_list) + '.*', src._memmap)
-
-        def __iter__(self):
-            return self
-
-        def next(self):
-            return self._iter.next().group(0)
-                                     
-    class _ReverseIterator:
-        def __init__(self, src):
-            self._src = src
-
-        def __iter__(self):
-            return self
-        
-        def next(self):
-            line = self._src.readPrevLine()
-            if line:
-                return line
-            else:
-                raise StopIteration()
-
+    
     def __init__(self, strm):
+        self._strm = strm
         self._memmap = mmap.mmap(strm.fileno(), 0, prot=mmap.PROT_READ)
 
     def __iter__(self):
-        return ThreadSource._ForwardIterator(self)
+        return self._findIter('\n')
 
-    def iter(self, event_list = None):
-        if event_list:
-            return ThreadSource._ForwardPatternIterator(self, event_list)
-        else:
-            return ThreadSource._ForwardIterator(self)
-    
-    def reverseIter(self):
-        return ThreadSource._ReverseIterator(self)
+    def __len__(self):
+        return self._memmap.size()
+
+    def __getitem__(self, index):
+        return self._memmap[index]
+
+    def regexIter(self, pattern):
+        return re.finditer(pattern, self._memmap)
+
+    def findIter(self, pattern):
+        return iter(self._createIterator(pattern), -1)
 
     def close(self):
         self._memmap.close()
+        self._strm.close()
 
-    def readNextLine(self):
-        return self._memmap.readline()
+    def _createFindIterator(self, pattern):
+        patern_len = len(pattern)
+        def iterator():
+            iterator.loc = self._memmap,find(
+                patern,
+                iterator.loc + patern_len
+            )        
+            return iterator.loc
+        iterator.loc = -patern_len
+        return iterator
 
-    def readPrevLine(self):
-        prev_line_end = self._memmap.rfind('\n', 0, self._memmap.tell())
-        if prev_line_end > -1:
-            prev_line_start = self._memmap.rfind('\n', 0, prev_line_end)
-            self._memmap.seek(prev_line_start + 1, os.SEEK_SET)
-            return self._memmap[prev_line_start + 1: prev_line_end + 1]
-        else:
-            return ''
+        
