@@ -9,7 +9,7 @@ class ThreadSource:
         self._memmap = mmap.mmap(strm.fileno(), 0, prot=mmap.PROT_READ)
 
     def __iter__(self):
-        return self._findIter('\n')
+        return self.findIter('\n')
 
     def __len__(self):
         return self._memmap.size()
@@ -21,21 +21,21 @@ class ThreadSource:
         return re.finditer(pattern, self._memmap)
 
     def findIter(self, pattern):
-        return iter(self._createIterator(pattern), -1)
+        return self._createFindIterator(pattern)
 
     def close(self):
         self._memmap.close()
         self._strm.close()
 
     def _createFindIterator(self, pattern):
-        patern_len = len(pattern)
+        pattern_len = len(pattern)
         def iterator():
-            iterator.loc = self._memmap,find(
-                patern,
-                iterator.loc + patern_len
+            iterator.loc = self._memmap.find(
+                pattern,
+                iterator.loc + pattern_len
             )        
             return iterator.loc
-        iterator.loc = -patern_len
-        return iterator
+        iterator.loc = 0
+        return iter(iterator, -1)
 
         
