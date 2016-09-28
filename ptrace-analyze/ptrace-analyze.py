@@ -24,7 +24,7 @@ def reportThreadInfo(threads_list):
         print 'Total run time of thread: %dns' % (total_uSec)
         print 'Average wait time: %dns' % (avg_wait_time)
         print 'Max wait time: %dns' % (max_wait_time)
-        print 'Thread waited %d percent of run time' % (prc_wait_time)
+        print 'Thread waited %f percent of run time' % (prc_wait_time)
         print 'Total thread wait time: %dns' % (total_wait_time)
         print ''
 
